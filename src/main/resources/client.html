@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>聊天室</title>
+    <style>
+
+        #message{
+            margin-top:20px;
+            border:1px solid gray;
+            padding:20px;
+        }
+    </style>
+
+</head>
+<body>
+
+昵称：<input type="text" id="nickname" />
+<button onclick="conectWebSocket()">连接WebSocket</button>
+<button onclick="closeWebSocket()">断开连接</button>
+
+<br />
+消息：<input id="text" type="text"  />
+频道号<input id="toUser" type="text" />
+<button onclick="send()">发送消息</button>
+
+<!-- 存放接收到的消息. -->
+<div id="message">
+
+</div>
+
+
+<script type="text/javascript">
+
+    //连接对象.
+    var websocket = null;
+    var nickname = null;
+    function conectWebSocket(){
+        nickname = document.getElementById("nickname").value;
+        if(nickname == ''){
+            alert("请输入昵称");
+            return;
+        }
+        //判断当前的浏览器是否支持websocket.
+        if("WebSocket" in window){
+            websocket = new WebSocket("ws://localhost:8080/websocket/"+nickname);
+        }else{
+            alert("Not support websocket");
+            return false;
+        }
+
+        //连接成功的方法.
+        websocket.onopen = function(event){
+            setMessgeHtml("Loc MSG:连接成功");
+        }
+
+        //连接关闭.
+        websocket.onclose = function(event){
+            setMessgeHtml("Loc MSG:连接关闭");
+        }
+
+        //连接异常.
+        websocket.onerror = function(event){
+            setMessgeHtml("Loc MSG:连接异常");
+        }
+
+
+        websocket.onmessage = function(event){
+            setMessgeHtml(event.data);
+        }
+
+    }
+
+
+    function setMessgeHtml(msg){
+        var message = document.getElementById("message");
+        message.innerHTML += msg+"<br/>";
+    }
+
+    /**
+     发送消息.
+     */
+    function send(){
+        var message = document.getElementById("text").value;
+        var toUser = document.getElementById("toUser").value;
+        var socketMsg = {msg:message,toUser:toUser};
+        if(toUser == ''){
+            socketMsg.type ="0";//群聊.
+        }else{
+            socketMsg.type ="1";//单聊.
+        }
+
+        //websocket.send(nickname+":"+message);
+        websocket.send(JSON.stringify(socketMsg));//将json对象转换为json字符串.
+    }
+
+
+</script>
+
+
+
+</body>
+</html>
