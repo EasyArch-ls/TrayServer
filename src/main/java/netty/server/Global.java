@@ -1,4 +1,4 @@
-package netty;
+package netty.server;
 
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
